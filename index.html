@@ -9,22 +9,26 @@
 
 <style>
 *{box-sizing:border-box}
+
 body{
 margin:0;
 font-family:Arial,sans-serif;
 background:#f3f6fa;
 color:#172033
 }
+
 header{
 background:#111827;
 color:#fff;
 padding:18px
 }
+
 main{
 max-width:1050px;
 margin:auto;
 padding:18px
 }
+
 .card{
 background:#fff;
 border-radius:16px;
@@ -32,17 +36,20 @@ padding:20px;
 margin:14px 0;
 box-shadow:0 5px 20px #0001
 }
+
 .grid{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
 gap:12px
 }
+
 label{
 font-weight:700;
 font-size:14px;
 display:block;
 margin:7px 0 5px
 }
+
 input,select,button{
 width:100%;
 padding:12px;
@@ -50,6 +57,7 @@ border:1px solid #ccd3df;
 border-radius:10px;
 font-size:16px
 }
+
 button{
 background:#111827;
 color:#fff;
@@ -57,24 +65,35 @@ border:0;
 font-weight:700;
 cursor:pointer
 }
+
+button:disabled{
+opacity:.6;
+cursor:not-allowed
+}
+
 .secondary{
 background:#e8edf4;
 color:#172033
 }
+
 .danger{
 background:#b42318
 }
+
 .hidden{
 display:none!important
 }
+
 .ok{
 color:#067647;
 font-weight:700
 }
+
 .err{
 color:#b42318;
 font-weight:700
 }
+
 .badge{
 display:inline-block;
 padding:6px 10px;
@@ -84,19 +103,23 @@ color:#05603a;
 font-weight:700;
 font-size:12px
 }
+
 .result{
 font-size:28px;
 font-weight:800
 }
+
 .table{
 width:100%;
 border-collapse:collapse
 }
+
 .table td,.table th{
 padding:9px;
 border-bottom:1px solid #e7eaf0;
 text-align:left
 }
+
 .notice{
 padding:12px;
 border-radius:10px;
@@ -127,7 +150,9 @@ border-radius:10px;
 text-decoration:none;
 font-size:18px;
 font-weight:700;
-box-shadow:0 4px 10px #0002
+box-shadow:0 4px 10px #0002;
+border:0;
+cursor:pointer
 }
 
 .mp-button:hover{
@@ -139,6 +164,11 @@ font-size:12px;
 color:#667085;
 margin:12px 0 0
 }
+
+#mpMsg{
+margin-top:12px;
+font-weight:700
+}
 </style>
 </head>
 
@@ -147,9 +177,11 @@ margin:12px 0 0
 <header>
 <main style="padding:0">
 <h1>¿Cuánto tengo que cobrar?</h1>
+
 <div style="color:#d1d5db">
 Calculadora privada · Seguridad Privada · CCT 507/07
 </div>
+
 </main>
 </header>
 
@@ -178,25 +210,29 @@ Acceso completo a la calculadora salarial.
 
 <div class="mp-price">
 $3.000
-<span style="font-size:16px;font-weight:normal">/mes</span>
+<span style="font-size:16px;font-weight:normal">
+/mes
+</span>
 </div>
 
-<a
-href="https://mpago.la/2t5o4Fm"
-target="_blank"
-rel="noopener noreferrer"
+<button
+id="mpSubscribeBtn"
 class="mp-button"
+onclick="crearSuscripcion()"
 >
 SUSCRIBIRME POR $3.000/MES
-</a>
+</button>
 
 <p class="mp-small">
-Pago mediante Mercado Pago
+Pago seguro mediante Mercado Pago
 </p>
+
+<p id="mpMsg"></p>
 
 </div>
 
 <!-- FIN MERCADO PAGO -->
+
 
 <div class="grid">
 
@@ -205,13 +241,20 @@ Pago mediante Mercado Pago
 <h3>Crear cuenta</h3>
 
 <label>Nombre</label>
+
 <input id="regName">
 
 <label>Email</label>
+
 <input id="regEmail" type="email">
 
 <label>Contraseña</label>
-<input id="regPass" type="password" minlength="8">
+
+<input
+id="regPass"
+type="password"
+minlength="8"
+>
 
 <button onclick="register()">
 Crear cuenta
@@ -219,15 +262,21 @@ Crear cuenta
 
 </div>
 
+
 <div>
 
 <h3>Iniciar sesión</h3>
 
 <label>Email</label>
+
 <input id="loginEmail" type="email">
 
 <label>Contraseña</label>
-<input id="loginPass" type="password">
+
+<input
+id="loginPass"
+type="password"
+>
 
 <button onclick="login()">
 Entrar
@@ -327,6 +376,9 @@ SUPABASE_URL,
 SUPABASE_ANON_KEY
 );
 
+const CREAR_SUSCRIPCION_URL =
+"https://ixftbifwwmxeturjtlyb.supabase.co/functions/v1/crear-suscripcion";
+
 let user=null;
 let plan=null;
 
@@ -341,6 +393,190 @@ ok ? 'ok' : 'err';
 }
 
 
+/* ============================= */
+/* MERCADO PAGO - SUSCRIPCIÓN */
+/* ============================= */
+
+async function crearSuscripcion(){
+
+const boton =
+document.getElementById('mpSubscribeBtn');
+
+const mensaje =
+document.getElementById('mpMsg');
+
+
+mensaje.textContent="";
+mensaje.className="";
+
+
+/*
+Obtenemos la sesión actual.
+La suscripción debe estar asociada
+a una cuenta de la aplicación.
+*/
+
+const sessionResult =
+await db.auth.getSession();
+
+const session =
+sessionResult.data.session;
+
+
+if(!session){
+
+mensaje.textContent =
+"Primero creá una cuenta o iniciá sesión para suscribirte.";
+
+mensaje.className="err";
+
+return;
+
+}
+
+
+const usuario =
+session.user;
+
+
+if(!usuario.email){
+
+mensaje.textContent =
+"No se encontró el email de tu cuenta.";
+
+mensaje.className="err";
+
+return;
+
+}
+
+
+boton.disabled=true;
+
+boton.textContent=
+"Preparando Mercado Pago...";
+
+
+try{
+
+const respuesta =
+await fetch(
+CREAR_SUSCRIPCION_URL,
+{
+method:"POST",
+
+headers:{
+"Content-Type":"application/json",
+
+"Authorization":
+"Bearer "+session.access_token
+},
+
+body:JSON.stringify({
+
+user_id:usuario.id,
+
+email:usuario.email
+
+})
+
+}
+);
+
+
+const data =
+await respuesta.json();
+
+
+console.log(
+"Respuesta crear-suscripcion:",
+data
+);
+
+
+if(!respuesta.ok){
+
+console.error(
+"Error Mercado Pago:",
+data
+);
+
+mensaje.textContent =
+data.detalle?.message ||
+data.error ||
+"No se pudo crear la suscripción.";
+
+mensaje.className="err";
+
+boton.disabled=false;
+
+boton.textContent=
+"SUSCRIBIRME POR $3.000/MES";
+
+return;
+
+}
+
+
+if(!data.init_point){
+
+mensaje.textContent =
+"Mercado Pago no devolvió el enlace de pago.";
+
+mensaje.className="err";
+
+boton.disabled=false;
+
+boton.textContent=
+"SUSCRIBIRME POR $3.000/MES";
+
+return;
+
+}
+
+
+/*
+Todo salió correctamente.
+Enviamos al usuario al checkout
+de Mercado Pago.
+*/
+
+mensaje.textContent =
+"Redirigiendo a Mercado Pago...";
+
+mensaje.className="ok";
+
+
+window.location.href =
+data.init_point;
+
+
+}catch(error){
+
+console.error(
+"Error:",
+error
+);
+
+mensaje.textContent =
+"No se pudo conectar con Mercado Pago.";
+
+mensaje.className="err";
+
+boton.disabled=false;
+
+boton.textContent=
+"SUSCRIBIRME POR $3.000/MES";
+
+}
+
+}
+
+
+/* ============================= */
+/* REGISTRO */
+/* ============================= */
+
 async function register(){
 
 const e=
@@ -352,6 +588,7 @@ regPass.value;
 const n=
 regName.value.trim();
 
+
 if(!e || p.length<8){
 
 return message(
@@ -359,6 +596,7 @@ return message(
 );
 
 }
+
 
 const r=
 await db.auth.signUp({
@@ -376,6 +614,7 @@ emailRedirectTo:location.href
 
 });
 
+
 if(r.error){
 
 return message(
@@ -384,13 +623,18 @@ r.error.message
 
 }
 
+
 message(
-'Cuenta creada. Confirmá tu email. Luego el administrador deberá activar tu acceso.',
+'Cuenta creada. Confirmá tu email. Luego podrás iniciar sesión y contratar el acceso PRO.',
 true
 );
 
 }
 
+
+/* ============================= */
+/* LOGIN */
+/* ============================= */
 
 async function login(){
 
@@ -405,6 +649,7 @@ loginPass.value
 
 });
 
+
 if(r.error){
 
 return message(
@@ -413,15 +658,21 @@ r.error.message
 
 }
 
+
 location.reload();
 
 }
 
 
+/* ============================= */
+/* RECUPERAR CONTRASEÑA */
+/* ============================= */
+
 async function resetPassword(){
 
 const e=
 loginEmail.value.trim();
+
 
 if(!e){
 
@@ -431,6 +682,7 @@ return message(
 
 }
 
+
 const r=
 await db.auth.resetPasswordForEmail(
 e,
@@ -438,6 +690,7 @@ e,
 redirectTo:location.href
 }
 );
+
 
 if(r.error){
 
@@ -447,6 +700,7 @@ r.error.message
 
 }
 
+
 message(
 'Revisá tu email para recuperar la contraseña.',
 true
@@ -454,6 +708,10 @@ true
 
 }
 
+
+/* ============================= */
+/* LOGOUT */
+/* ============================= */
 
 async function logout(){
 
@@ -463,6 +721,10 @@ location.reload();
 
 }
 
+
+/* ============================= */
+/* FUNCIONES CALCULADORA */
+/* ============================= */
 
 function n(id){
 
@@ -490,6 +752,10 @@ maximumFractionDigits:0
 }
 
 
+/* ============================= */
+/* CONSTRUIR CALCULADORA */
+/* ============================= */
+
 function calculator(){
 
 calc.innerHTML=`
@@ -501,8 +767,10 @@ calc.innerHTML=`
 <input id="periodo" value="Septiembre 2026">
 </div>
 
+
 <div>
 <label>Categoría</label>
+
 <select id="categoria">
 
 <option>
@@ -522,7 +790,9 @@ Administrativo
 </option>
 
 </select>
+
 </div>
+
 
 <div>
 
@@ -552,137 +822,289 @@ Aeroportuario + Portuario
 
 </div>
 
+
 <div>
+
 <label>
 Adicional aeroportuario
 </label>
-<input id="aero" type="number" value="0">
+
+<input
+id="aero"
+type="number"
+value="0"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Adicional portuario
 </label>
-<input id="puerto" type="number" value="0">
+
+<input
+id="puerto"
+type="number"
+value="0"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Sueldo básico
 </label>
-<input id="basico" type="number" value="1037600">
+
+<input
+id="basico"
+type="number"
+value="1037600"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Antigüedad (años)
 </label>
-<input id="antiguedad" type="number" value="11">
+
+<input
+id="antiguedad"
+type="number"
+value="11"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Horas trabajadas
 </label>
-<input id="horas" type="number" value="204">
+
+<input
+id="horas"
+type="number"
+value="204"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Horas nocturnas
 </label>
-<input id="nocturnas" type="number" value="153">
+
+<input
+id="nocturnas"
+type="number"
+value="153"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Feriados
 </label>
-<input id="feriados" type="number" value="0">
+
+<input
+id="feriados"
+type="number"
+value="0"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Horas extra 50%
 </label>
-<input id="extra50" type="number" value="4">
+
+<input
+id="extra50"
+type="number"
+value="4"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Horas extra 100%
 </label>
-<input id="extra100" type="number" value="0">
+
+<input
+id="extra100"
+type="number"
+value="0"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Presentismo
 </label>
-<input id="presentismo" type="number" value="180000">
+
+<input
+id="presentismo"
+type="number"
+value="180000"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Viáticos
 </label>
-<input id="viaticos" type="number" value="524000">
+
+<input
+id="viaticos"
+type="number"
+value="524000"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Adicional no remunerativo
 </label>
-<input id="noRem" type="number" value="50000">
+
+<input
+id="noRem"
+type="number"
+value="50000"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Días de vacaciones
 </label>
-<input id="diasVac" type="number" value="0">
+
+<input
+id="diasVac"
+type="number"
+value="0"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Valor diario vacacional
 </label>
-<input id="valorVac" type="number" value="0">
+
+<input
+id="valorVac"
+type="number"
+value="0"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Días de suspensión
 </label>
-<input id="susp" type="number" value="0">
+
+<input
+id="susp"
+type="number"
+value="0"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Manutención/descuento (%)
 </label>
-<input id="man" type="number" value="20">
+
+<input
+id="man"
+type="number"
+value="20"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Jubilación (%)
 </label>
-<input id="jub" type="number" value="11">
+
+<input
+id="jub"
+type="number"
+value="11"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Obra social (%)
 </label>
-<input id="os" type="number" value="3">
+
+<input
+id="os"
+type="number"
+value="3"
+>
+
 </div>
 
+
 <div>
+
 <label>
 Aporte solidario UPSRA
 </label>
-<input id="solidario" type="number" value="20000">
+
+<input
+id="solidario"
+type="number"
+value="20000"
+>
+
 </div>
 
 </div>
@@ -703,6 +1125,7 @@ onclick="calculate()"
 CALCULAR Y GUARDAR
 </button>
 
+
 <button
 class="secondary"
 style="width:auto"
@@ -722,6 +1145,10 @@ calculate();
 
 }
 
+
+/* ============================= */
+/* CALCULAR */
+/* ============================= */
 
 async function calculate(){
 
@@ -772,38 +1199,48 @@ return alert(
 
 const h=b/200;
 
+
 const a=
 b*.01*ant;
+
 
 const nn=
 h*.01*noct;
 
+
 const x50=
 h*1.5*e50;
+
 
 const x100=
 h*2*e100;
 
+
 const f=
 h*2*fer;
+
 
 const ae=
 (t==='aero'||t==='ambos')
 ?n('aero')
 :0;
 
+
 const pu=
 (t==='puerto'||t==='ambos')
 ?n('puerto')
 :0;
 
+
 const v=
 dv*vv;
+
 
 const sd=
 h*su+
 pre/30*su+
 via/30*su;
+
 
 const rem=
 Math.max(
@@ -811,17 +1248,22 @@ Math.max(
 b+a+nn+x50+x100+f+pre+ae+pu+v-sd
 );
 
+
 const j=
 rem*jp/100;
+
 
 const o=
 rem*op/100;
 
+
 const ma=
 rem*man/100;
 
+
 const d=
 j+o+sol+ma;
+
 
 const net=
 rem+via+nr-d;
@@ -833,19 +1275,23 @@ result.innerHTML=`
 Resultado
 </h3>
 
+
 <div class="result">
 ${money(net)}
 </div>
+
 
 <p>
 Remunerativo:
 <b>${money(rem)}</b>
 </p>
 
+
 <p>
 Descuentos:
 <b>${money(d)}</b>
 </p>
+
 
 <table class="table">
 
@@ -854,45 +1300,54 @@ Descuentos:
 <td>${money(h)}</td>
 </tr>
 
+
 <tr>
 <td>Antigüedad</td>
 <td>${money(a)}</td>
 </tr>
+
 
 <tr>
 <td>Nocturnidad</td>
 <td>${money(nn)}</td>
 </tr>
 
+
 <tr>
 <td>Extras 50%</td>
 <td>${money(x50)}</td>
 </tr>
+
 
 <tr>
 <td>Extras 100%</td>
 <td>${money(x100)}</td>
 </tr>
 
+
 <tr>
 <td>Feriados</td>
 <td>${money(f)}</td>
 </tr>
+
 
 <tr>
 <td>Vacaciones / plus</td>
 <td>${money(v)}</td>
 </tr>
 
+
 <tr>
 <td>Suspensión</td>
 <td>${money(sd)}</td>
 </tr>
 
+
 <tr>
 <td>Viáticos</td>
 <td>${money(via)}</td>
 </tr>
+
 
 <tr>
 <td>No remunerativo</td>
@@ -900,6 +1355,7 @@ Descuentos:
 </tr>
 
 </table>
+
 
 <p class="small">
 Cálculo orientativo según los parámetros ingresados.
@@ -955,6 +1411,10 @@ result.insertAdjacentHTML(
 
 }
 
+
+/* ============================= */
+/* HISTORIAL */
+/* ============================= */
 
 async function loadHistory(){
 
@@ -1021,6 +1481,10 @@ ${money(x.neto)}
 }
 
 
+/* ============================= */
+/* INICIAR APLICACIÓN */
+/* ============================= */
+
 async function start(u){
 
 user=u;
@@ -1028,6 +1492,7 @@ user=u;
 auth.classList.add('hidden');
 
 app.classList.remove('hidden');
+
 
 welcome.textContent=
 'Hola, '+
@@ -1085,6 +1550,7 @@ return;
 badge.textContent=
 plan.toUpperCase();
 
+
 calculator();
 
 loadHistory();
@@ -1092,10 +1558,15 @@ loadHistory();
 }
 
 
+/* ============================= */
+/* SESIÓN INICIAL */
+/* ============================= */
+
 (async()=>{
 
 const r=
 await db.auth.getSession();
+
 
 if(r.data.session){
 
@@ -1107,6 +1578,10 @@ r.data.session.user
 
 })();
 
+
+/* ============================= */
+/* CAMBIOS DE AUTENTICACIÓN */
+/* ============================= */
 
 db.auth.onAuthStateChange(
 (e,s)=>{
@@ -1123,4 +1598,4 @@ start(s.user);
 </script>
 
 </body>
-  </html>
+</html>
