@@ -1,14 +1,1126 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>¿Cuánto tengo que cobrar? — Acceso privado</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f3f6fa;color:#172033}header{background:#111827;color:#fff;padding:18px}main{max-width:1050px;margin:auto;padding:18px}.card{background:#fff;border-radius:16px;padding:20px;margin:14px 0;box-shadow:0 5px 20px #0001}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}label{font-weight:700;font-size:14px;display:block;margin:7px 0 5px}input,select,button{width:100%;padding:12px;border:1px solid #ccd3df;border-radius:10px;font-size:16px}button{background:#111827;color:#fff;border:0;font-weight:700;cursor:pointer}.secondary{background:#e8edf4;color:#172033}.danger{background:#b42318}.hidden{display:none!important}.ok{color:#067647;font-weight:700}.err{color:#b42318;font-weight:700}.badge{display:inline-block;padding:6px 10px;border-radius:99px;background:#d1fadf;color:#05603a;font-weight:700;font-size:12px}.result{font-size:28px;font-weight:800}.table{width:100%;border-collapse:collapse}.table td,.table th{padding:9px;border-bottom:1px solid #e7eaf0;text-align:left}.notice{padding:12px;border-radius:10px;background:#fff7ed}</style></head><body><header><main style="padding:0"><h1>¿Cuánto tengo que cobrar?</h1><div style="color:#d1d5db">Calculadora privada · Seguridad Privada · CCT 507/07</div></main></header><main><section id="auth" class="card"><h2>Acceso privado</h2><p>La aplicación no tiene modalidad gratuita. Solo las cuentas autorizadas pueden utilizarla.</p><div class="grid"><div><h3>Crear cuenta</h3><label>Nombre</label><input id="regName"><label>Email</label><input id="regEmail" type="email"><label>Contraseña</label><input id="regPass" type="password" minlength="8"><button onclick="register()">Crear cuenta</button></div><div><h3>Iniciar sesión</h3><label>Email</label><input id="loginEmail" type="email"><label>Contraseña</label><input id="loginPass" type="password"><button onclick="login()">Entrar</button><button class="secondary" style="margin-top:8px" onclick="resetPassword()">Recuperar contraseña</button></div></div><p id="authMsg"></p></section><section id="app" class="hidden"><div class="card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><h2 id="welcome">Mi cuenta</h2><span id="badge" class="badge"></span></div><button class="danger" style="width:auto" onclick="logout()">Cerrar sesión</button></div></div><div id="calculator" class="card"><h2>Calculadora salarial</h2><div id="calc"></div></div><div id="history" class="card"><h2>Mi historial</h2><div id="historyList">Cargando...</div></div></section></main><script>
-const SUPABASE_URL="https://ixftbifwwmxeturjtlyb.supabase.co";const SUPABASE_ANON_KEY="sb_publishable_H_5HcTrgAARZaxPo7CD1Mg_18t_BT0f";const db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);let user=null,plan=null;
-function message(t,ok=false){authMsg.textContent=t;authMsg.className=ok?'ok':'err'}
-async function register(){const e=regEmail.value.trim(),p=regPass.value,n=regName.value.trim();if(!e||p.length<8)return message('Usá un email válido y una contraseña de al menos 8 caracteres.');const r=await db.auth.signUp({email:e,password:p,options:{data:{full_name:n},emailRedirectTo:location.href}});if(r.error)return message(r.error.message);message('Cuenta creada. Confirmá tu email. Luego el administrador deberá activar tu acceso.',true)}
-async function login(){const r=await db.auth.signInWithPassword({email:loginEmail.value.trim(),password:loginPass.value});if(r.error)return message(r.error.message);location.reload()}
-async function resetPassword(){const e=loginEmail.value.trim();if(!e)return message('Ingresá primero tu email.');const r=await db.auth.resetPasswordForEmail(e,{redirectTo:location.href});if(r.error)return message(r.error.message);message('Revisá tu email para recuperar la contraseña.',true)}
-async function logout(){await db.auth.signOut();location.reload()}
-function n(id){return Math.max(0,Number(document.getElementById(id)?.value)||0)}function money(x){return new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(x||0)}
-function calculator(){calc.innerHTML=`<div class="grid"><div><label>Periodo</label><input id="periodo" value="Septiembre 2026"></div><div><label>Categoría</label><select id="categoria"><option>Vigilador General</option><option>Vigilador Principal</option><option>Operador de Monitoreo</option><option>Administrativo</option></select></div><div><label>Tipo de servicio</label><select id="tipo"><option value="general">General</option><option value="aero">Aeroportuario</option><option value="puerto">Portuario</option><option value="ambos">Aeroportuario + Portuario</option></select></div><div><label>Adicional aeroportuario</label><input id="aero" type="number" value="0"></div><div><label>Adicional portuario</label><input id="puerto" type="number" value="0"></div><div><label>Sueldo básico</label><input id="basico" type="number" value="1037600"></div><div><label>Antigüedad (años)</label><input id="antiguedad" type="number" value="11"></div><div><label>Horas trabajadas</label><input id="horas" type="number" value="204"></div><div><label>Horas nocturnas</label><input id="nocturnas" type="number" value="153"></div><div><label>Feriados</label><input id="feriados" type="number" value="0"></div><div><label>Horas extra 50%</label><input id="extra50" type="number" value="4"></div><div><label>Horas extra 100%</label><input id="extra100" type="number" value="0"></div><div><label>Presentismo</label><input id="presentismo" type="number" value="180000"></div><div><label>Viáticos</label><input id="viaticos" type="number" value="524000"></div><div><label>Adicional no remunerativo</label><input id="noRem" type="number" value="50000"></div><div><label>Días de vacaciones</label><input id="diasVac" type="number" value="0"></div><div><label>Valor diario vacacional</label><input id="valorVac" type="number" value="0"></div><div><label>Días de suspensión</label><input id="susp" type="number" value="0"></div><div><label>Manutención/descuento (%)</label><input id="man" type="number" value="20"></div><div><label>Jubilación (%)</label><input id="jub" type="number" value="11"></div><div><label>Obra social (%)</label><input id="os" type="number" value="3"></div><div><label>Aporte solidario UPSRA</label><input id="solidario" type="number" value="20000"></div></div><div style="display:flex;gap:8px;margin-top:15px;flex-wrap:wrap"><button id="calculateBtn" style="width:auto" onclick="calculate()">CALCULAR Y GUARDAR</button><button class="secondary" style="width:auto" onclick="window.print()">IMPRIMIR / PDF</button></div><div id="result" class="card"></div>`;calculate()}
-async function calculate(){const b=n('basico'),ant=n('antiguedad'),noct=n('nocturnas'),fer=n('feriados'),e50=n('extra50'),e100=n('extra100'),pre=n('presentismo'),via=n('viaticos'),nr=n('noRem'),dv=n('diasVac'),vv=n('valorVac'),su=n('susp'),man=n('man'),jp=n('jub'),op=n('os'),sol=n('solidario'),t=document.getElementById('tipo').value;if(!b)return alert('Ingresá el sueldo básico');const h=b/200,a=b*.01*ant,nn=h*.01*noct,x50=h*1.5*e50,x100=h*2*e100,f=h*2*fer,ae=(t==='aero'||t==='ambos')?n('aero'):0,pu=(t==='puerto'||t==='ambos')?n('puerto'):0,v=dv*vv,sd=h*su+pre/30*su+via/30*su,rem=Math.max(0,b+a+nn+x50+x100+f+pre+ae+pu+v-sd),j=rem*jp/100,o=rem*op/100,ma=rem*man/100,d=j+o+sol+ma,net=rem+via+nr-d;result.innerHTML=`<h3>Resultado</h3><div class="result">${money(net)}</div><p>Remunerativo: <b>${money(rem)}</b></p><p>Descuentos: <b>${money(d)}</b></p><table class="table"><tr><td>Valor hora</td><td>${money(h)}</td></tr><tr><td>Antigüedad</td><td>${money(a)}</td></tr><tr><td>Nocturnidad</td><td>${money(nn)}</td></tr><tr><td>Extras 50%</td><td>${money(x50)}</td></tr><tr><td>Extras 100%</td><td>${money(x100)}</td></tr><tr><td>Feriados</td><td>${money(f)}</td></tr><tr><td>Vacaciones / plus</td><td>${money(v)}</td></tr><tr><td>Suspensión</td><td>${money(sd)}</td></tr><tr><td>Viáticos</td><td>${money(via)}</td></tr><tr><td>No remunerativo</td><td>${money(nr)}</td></tr></table><p class="small">Cálculo orientativo según los parámetros ingresados.</p>`;const r=await db.from('calculations').insert({user_id:user.id,periodo:periodo.value,neto:net,payload:{b,ant,noct,fer,e50,e100,pre,via,nr,dv,vv,su,man,jp,op,sol,rem,d,net}});if(!r.error)result.insertAdjacentHTML('beforeend','<p class="ok">Cálculo guardado en tu historial.</p>')}
-async function loadHistory(){const r=await db.from('calculations').select('periodo,neto,created_at').order('created_at',{ascending:false}).limit(50);historyList.innerHTML=r.error?'<p class="err">No se pudo cargar el historial.</p>':r.data.length?`<table class="table"><tr><th>Fecha</th><th>Periodo</th><th>Neto</th></tr>${r.data.map(x=>`<tr><td>${new Date(x.created_at).toLocaleString('es-AR')}</td><td>${x.periodo||''}</td><td>${money(x.neto)}</td></tr>`).join('')}</table>`:'<p>No hay cálculos guardados.</p>'}
-async function start(u){user=u;auth.classList.add('hidden');app.classList.remove('hidden');welcome.textContent='Hola, '+(u.user_metadata?.full_name||u.email);const r=await db.from('profiles').select('plan').eq('id',u.id).single();if(r.error||!r.data)return location.reload();plan=r.data.plan;if(plan!=='pro'&&plan!=='admin'){app.innerHTML='<div class="card"><h2>Cuenta pendiente de activación</h2><p>Tu cuenta está registrada, pero el acceso debe ser activado por el administrador.</p><button onclick="logout()">Cerrar sesión</button></div>';return}badge.textContent=plan.toUpperCase();calculator();loadHistory()}
-(async()=>{const r=await db.auth.getSession();if(r.data.session)start(r.data.session.user)})();db.auth.onAuthStateChange((e,s)=>{if(s?.user)start(s.user)});
-</script></body></html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>¿Cuánto tengo que cobrar? — Calculadora Sueldo PRO</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:#f3f6fa;
+color:#172033
+}
+header{
+background:#111827;
+color:#fff;
+padding:18px
+}
+main{
+max-width:1050px;
+margin:auto;
+padding:18px
+}
+.card{
+background:#fff;
+border-radius:16px;
+padding:20px;
+margin:14px 0;
+box-shadow:0 5px 20px #0001
+}
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:12px
+}
+label{
+font-weight:700;
+font-size:14px;
+display:block;
+margin:7px 0 5px
+}
+input,select,button{
+width:100%;
+padding:12px;
+border:1px solid #ccd3df;
+border-radius:10px;
+font-size:16px
+}
+button{
+background:#111827;
+color:#fff;
+border:0;
+font-weight:700;
+cursor:pointer
+}
+.secondary{
+background:#e8edf4;
+color:#172033
+}
+.danger{
+background:#b42318
+}
+.hidden{
+display:none!important
+}
+.ok{
+color:#067647;
+font-weight:700
+}
+.err{
+color:#b42318;
+font-weight:700
+}
+.badge{
+display:inline-block;
+padding:6px 10px;
+border-radius:99px;
+background:#d1fadf;
+color:#05603a;
+font-weight:700;
+font-size:12px
+}
+.result{
+font-size:28px;
+font-weight:800
+}
+.table{
+width:100%;
+border-collapse:collapse
+}
+.table td,.table th{
+padding:9px;
+border-bottom:1px solid #e7eaf0;
+text-align:left
+}
+.notice{
+padding:12px;
+border-radius:10px;
+background:#fff7ed
+}
+
+.mp-box{
+margin:20px 0;
+padding:24px;
+text-align:center;
+background:#eef7ff;
+border:1px solid #c7e5ff;
+border-radius:16px
+}
+
+.mp-price{
+font-size:32px;
+font-weight:800;
+margin:15px 0
+}
+
+.mp-button{
+display:inline-block;
+background:#009ee3;
+color:#fff;
+padding:15px 28px;
+border-radius:10px;
+text-decoration:none;
+font-size:18px;
+font-weight:700;
+box-shadow:0 4px 10px #0002
+}
+
+.mp-button:hover{
+opacity:.9
+}
+
+.mp-small{
+font-size:12px;
+color:#667085;
+margin:12px 0 0
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<main style="padding:0">
+<h1>¿Cuánto tengo que cobrar?</h1>
+<div style="color:#d1d5db">
+Calculadora privada · Seguridad Privada · CCT 507/07
+</div>
+</main>
+</header>
+
+<main>
+
+<section id="auth" class="card">
+
+<h2>Acceso privado</h2>
+
+<p>
+La aplicación no tiene modalidad gratuita.
+Solo las cuentas autorizadas pueden utilizarla.
+</p>
+
+<!-- MERCADO PAGO -->
+
+<div class="mp-box">
+
+<h2 style="margin:0 0 8px">
+Calculadora Sueldo PRO
+</h2>
+
+<p>
+Acceso completo a la calculadora salarial.
+</p>
+
+<div class="mp-price">
+$3.000
+<span style="font-size:16px;font-weight:normal">/mes</span>
+</div>
+
+<a
+href="https://mpago.la/2t5o4Fm"
+target="_blank"
+rel="noopener noreferrer"
+class="mp-button"
+>
+SUSCRIBIRME POR $3.000/MES
+</a>
+
+<p class="mp-small">
+Pago mediante Mercado Pago
+</p>
+
+</div>
+
+<!-- FIN MERCADO PAGO -->
+
+<div class="grid">
+
+<div>
+
+<h3>Crear cuenta</h3>
+
+<label>Nombre</label>
+<input id="regName">
+
+<label>Email</label>
+<input id="regEmail" type="email">
+
+<label>Contraseña</label>
+<input id="regPass" type="password" minlength="8">
+
+<button onclick="register()">
+Crear cuenta
+</button>
+
+</div>
+
+<div>
+
+<h3>Iniciar sesión</h3>
+
+<label>Email</label>
+<input id="loginEmail" type="email">
+
+<label>Contraseña</label>
+<input id="loginPass" type="password">
+
+<button onclick="login()">
+Entrar
+</button>
+
+<button
+class="secondary"
+style="margin-top:8px"
+onclick="resetPassword()"
+>
+Recuperar contraseña
+</button>
+
+</div>
+
+</div>
+
+<p id="authMsg"></p>
+
+</section>
+
+
+<section id="app" class="hidden">
+
+<div class="card">
+
+<div style="
+display:flex;
+justify-content:space-between;
+gap:10px;
+align-items:center;
+flex-wrap:wrap
+">
+
+<div>
+
+<h2 id="welcome">
+Mi cuenta
+</h2>
+
+<span id="badge" class="badge"></span>
+
+</div>
+
+<button
+class="danger"
+style="width:auto"
+onclick="logout()"
+>
+Cerrar sesión
+</button>
+
+</div>
+
+</div>
+
+
+<div id="calculator" class="card">
+
+<h2>
+Calculadora salarial
+</h2>
+
+<div id="calc"></div>
+
+</div>
+
+
+<div id="history" class="card">
+
+<h2>
+Mi historial
+</h2>
+
+<div id="historyList">
+Cargando...
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+
+<script>
+
+const SUPABASE_URL =
+"https://ixftbifwwmxeturjtlyb.supabase.co";
+
+const SUPABASE_ANON_KEY =
+"sb_publishable_H_5HcTrgAARZaxPo7CD1Mg_18t_BT0f";
+
+const db =
+supabase.createClient(
+SUPABASE_URL,
+SUPABASE_ANON_KEY
+);
+
+let user=null;
+let plan=null;
+
+
+function message(t,ok=false){
+
+authMsg.textContent=t;
+
+authMsg.className=
+ok ? 'ok' : 'err';
+
+}
+
+
+async function register(){
+
+const e=
+regEmail.value.trim();
+
+const p=
+regPass.value;
+
+const n=
+regName.value.trim();
+
+if(!e || p.length<8){
+
+return message(
+'Usá un email válido y una contraseña de al menos 8 caracteres.'
+);
+
+}
+
+const r=
+await db.auth.signUp({
+
+email:e,
+
+password:p,
+
+options:{
+data:{
+full_name:n
+},
+emailRedirectTo:location.href
+}
+
+});
+
+if(r.error){
+
+return message(
+r.error.message
+);
+
+}
+
+message(
+'Cuenta creada. Confirmá tu email. Luego el administrador deberá activar tu acceso.',
+true
+);
+
+}
+
+
+async function login(){
+
+const r=
+await db.auth.signInWithPassword({
+
+email:
+loginEmail.value.trim(),
+
+password:
+loginPass.value
+
+});
+
+if(r.error){
+
+return message(
+r.error.message
+);
+
+}
+
+location.reload();
+
+}
+
+
+async function resetPassword(){
+
+const e=
+loginEmail.value.trim();
+
+if(!e){
+
+return message(
+'Ingresá primero tu email.'
+);
+
+}
+
+const r=
+await db.auth.resetPasswordForEmail(
+e,
+{
+redirectTo:location.href
+}
+);
+
+if(r.error){
+
+return message(
+r.error.message
+);
+
+}
+
+message(
+'Revisá tu email para recuperar la contraseña.',
+true
+);
+
+}
+
+
+async function logout(){
+
+await db.auth.signOut();
+
+location.reload();
+
+}
+
+
+function n(id){
+
+return Math.max(
+0,
+Number(
+document.getElementById(id)?.value
+)||0
+);
+
+}
+
+
+function money(x){
+
+return new Intl.NumberFormat(
+'es-AR',
+{
+style:'currency',
+currency:'ARS',
+maximumFractionDigits:0
+}
+).format(x||0);
+
+}
+
+
+function calculator(){
+
+calc.innerHTML=`
+
+<div class="grid">
+
+<div>
+<label>Periodo</label>
+<input id="periodo" value="Septiembre 2026">
+</div>
+
+<div>
+<label>Categoría</label>
+<select id="categoria">
+
+<option>
+Vigilador General
+</option>
+
+<option>
+Vigilador Principal
+</option>
+
+<option>
+Operador de Monitoreo
+</option>
+
+<option>
+Administrativo
+</option>
+
+</select>
+</div>
+
+<div>
+
+<label>
+Tipo de servicio
+</label>
+
+<select id="tipo">
+
+<option value="general">
+General
+</option>
+
+<option value="aero">
+Aeroportuario
+</option>
+
+<option value="puerto">
+Portuario
+</option>
+
+<option value="ambos">
+Aeroportuario + Portuario
+</option>
+
+</select>
+
+</div>
+
+<div>
+<label>
+Adicional aeroportuario
+</label>
+<input id="aero" type="number" value="0">
+</div>
+
+<div>
+<label>
+Adicional portuario
+</label>
+<input id="puerto" type="number" value="0">
+</div>
+
+<div>
+<label>
+Sueldo básico
+</label>
+<input id="basico" type="number" value="1037600">
+</div>
+
+<div>
+<label>
+Antigüedad (años)
+</label>
+<input id="antiguedad" type="number" value="11">
+</div>
+
+<div>
+<label>
+Horas trabajadas
+</label>
+<input id="horas" type="number" value="204">
+</div>
+
+<div>
+<label>
+Horas nocturnas
+</label>
+<input id="nocturnas" type="number" value="153">
+</div>
+
+<div>
+<label>
+Feriados
+</label>
+<input id="feriados" type="number" value="0">
+</div>
+
+<div>
+<label>
+Horas extra 50%
+</label>
+<input id="extra50" type="number" value="4">
+</div>
+
+<div>
+<label>
+Horas extra 100%
+</label>
+<input id="extra100" type="number" value="0">
+</div>
+
+<div>
+<label>
+Presentismo
+</label>
+<input id="presentismo" type="number" value="180000">
+</div>
+
+<div>
+<label>
+Viáticos
+</label>
+<input id="viaticos" type="number" value="524000">
+</div>
+
+<div>
+<label>
+Adicional no remunerativo
+</label>
+<input id="noRem" type="number" value="50000">
+</div>
+
+<div>
+<label>
+Días de vacaciones
+</label>
+<input id="diasVac" type="number" value="0">
+</div>
+
+<div>
+<label>
+Valor diario vacacional
+</label>
+<input id="valorVac" type="number" value="0">
+</div>
+
+<div>
+<label>
+Días de suspensión
+</label>
+<input id="susp" type="number" value="0">
+</div>
+
+<div>
+<label>
+Manutención/descuento (%)
+</label>
+<input id="man" type="number" value="20">
+</div>
+
+<div>
+<label>
+Jubilación (%)
+</label>
+<input id="jub" type="number" value="11">
+</div>
+
+<div>
+<label>
+Obra social (%)
+</label>
+<input id="os" type="number" value="3">
+</div>
+
+<div>
+<label>
+Aporte solidario UPSRA
+</label>
+<input id="solidario" type="number" value="20000">
+</div>
+
+</div>
+
+
+<div style="
+display:flex;
+gap:8px;
+margin-top:15px;
+flex-wrap:wrap
+">
+
+<button
+id="calculateBtn"
+style="width:auto"
+onclick="calculate()"
+>
+CALCULAR Y GUARDAR
+</button>
+
+<button
+class="secondary"
+style="width:auto"
+onclick="window.print()"
+>
+IMPRIMIR / PDF
+</button>
+
+</div>
+
+
+<div id="result" class="card"></div>
+
+`;
+
+calculate();
+
+}
+
+
+async function calculate(){
+
+const b=n('basico');
+
+const ant=n('antiguedad');
+
+const noct=n('nocturnas');
+
+const fer=n('feriados');
+
+const e50=n('extra50');
+
+const e100=n('extra100');
+
+const pre=n('presentismo');
+
+const via=n('viaticos');
+
+const nr=n('noRem');
+
+const dv=n('diasVac');
+
+const vv=n('valorVac');
+
+const su=n('susp');
+
+const man=n('man');
+
+const jp=n('jub');
+
+const op=n('os');
+
+const sol=n('solidario');
+
+const t=
+document.getElementById('tipo').value;
+
+
+if(!b){
+
+return alert(
+'Ingresá el sueldo básico'
+);
+
+}
+
+
+const h=b/200;
+
+const a=
+b*.01*ant;
+
+const nn=
+h*.01*noct;
+
+const x50=
+h*1.5*e50;
+
+const x100=
+h*2*e100;
+
+const f=
+h*2*fer;
+
+const ae=
+(t==='aero'||t==='ambos')
+?n('aero')
+:0;
+
+const pu=
+(t==='puerto'||t==='ambos')
+?n('puerto')
+:0;
+
+const v=
+dv*vv;
+
+const sd=
+h*su+
+pre/30*su+
+via/30*su;
+
+const rem=
+Math.max(
+0,
+b+a+nn+x50+x100+f+pre+ae+pu+v-sd
+);
+
+const j=
+rem*jp/100;
+
+const o=
+rem*op/100;
+
+const ma=
+rem*man/100;
+
+const d=
+j+o+sol+ma;
+
+const net=
+rem+via+nr-d;
+
+
+result.innerHTML=`
+
+<h3>
+Resultado
+</h3>
+
+<div class="result">
+${money(net)}
+</div>
+
+<p>
+Remunerativo:
+<b>${money(rem)}</b>
+</p>
+
+<p>
+Descuentos:
+<b>${money(d)}</b>
+</p>
+
+<table class="table">
+
+<tr>
+<td>Valor hora</td>
+<td>${money(h)}</td>
+</tr>
+
+<tr>
+<td>Antigüedad</td>
+<td>${money(a)}</td>
+</tr>
+
+<tr>
+<td>Nocturnidad</td>
+<td>${money(nn)}</td>
+</tr>
+
+<tr>
+<td>Extras 50%</td>
+<td>${money(x50)}</td>
+</tr>
+
+<tr>
+<td>Extras 100%</td>
+<td>${money(x100)}</td>
+</tr>
+
+<tr>
+<td>Feriados</td>
+<td>${money(f)}</td>
+</tr>
+
+<tr>
+<td>Vacaciones / plus</td>
+<td>${money(v)}</td>
+</tr>
+
+<tr>
+<td>Suspensión</td>
+<td>${money(sd)}</td>
+</tr>
+
+<tr>
+<td>Viáticos</td>
+<td>${money(via)}</td>
+</tr>
+
+<tr>
+<td>No remunerativo</td>
+<td>${money(nr)}</td>
+</tr>
+
+</table>
+
+<p class="small">
+Cálculo orientativo según los parámetros ingresados.
+</p>
+
+`;
+
+
+const r=
+await db
+.from('calculations')
+.insert({
+
+user_id:user.id,
+
+periodo:periodo.value,
+
+neto:net,
+
+payload:{
+b,
+ant,
+noct,
+fer,
+e50,
+e100,
+pre,
+via,
+nr,
+dv,
+vv,
+su,
+man,
+jp,
+op,
+sol,
+rem,
+d,
+net
+}
+
+});
+
+
+if(!r.error){
+
+result.insertAdjacentHTML(
+'beforeend',
+'<p class="ok">Cálculo guardado en tu historial.</p>'
+);
+
+}
+
+}
+
+
+async function loadHistory(){
+
+const r=
+await db
+.from('calculations')
+.select(
+'periodo,neto,created_at'
+)
+.order(
+'created_at',
+{
+ascending:false
+}
+)
+.limit(50);
+
+
+historyList.innerHTML=
+r.error
+?
+'<p class="err">No se pudo cargar el historial.</p>'
+:
+r.data.length
+?
+`
+
+<table class="table">
+
+<tr>
+<th>Fecha</th>
+<th>Periodo</th>
+<th>Neto</th>
+</tr>
+
+${
+r.data.map(x=>`
+
+<tr>
+
+<td>
+${new Date(x.created_at).toLocaleString('es-AR')}
+</td>
+
+<td>
+${x.periodo||''}
+</td>
+
+<td>
+${money(x.neto)}
+</td>
+
+</tr>
+
+`).join('')
+}
+
+</table>
+
+`
+:
+'<p>No hay cálculos guardados.</p>';
+
+}
+
+
+async function start(u){
+
+user=u;
+
+auth.classList.add('hidden');
+
+app.classList.remove('hidden');
+
+welcome.textContent=
+'Hola, '+
+(u.user_metadata?.full_name||u.email);
+
+
+const r=
+await db
+.from('profiles')
+.select('plan')
+.eq('id',u.id)
+.single();
+
+
+if(r.error||!r.data){
+
+return location.reload();
+
+}
+
+
+plan=r.data.plan;
+
+
+if(
+plan!=='pro' &&
+plan!=='admin'
+){
+
+app.innerHTML=`
+
+<div class="card">
+
+<h2>
+Cuenta pendiente de activación
+</h2>
+
+<p>
+Tu cuenta está registrada, pero el acceso debe ser activado por el administrador.
+</p>
+
+<button onclick="logout()">
+Cerrar sesión
+</button>
+
+</div>
+
+`;
+
+return;
+
+}
+
+
+badge.textContent=
+plan.toUpperCase();
+
+calculator();
+
+loadHistory();
+
+}
+
+
+(async()=>{
+
+const r=
+await db.auth.getSession();
+
+if(r.data.session){
+
+start(
+r.data.session.user
+);
+
+}
+
+})();
+
+
+db.auth.onAuthStateChange(
+(e,s)=>{
+
+if(s?.user){
+
+start(s.user);
+
+}
+
+}
+);
+
+</script>
+
+</body>
+  </html>
