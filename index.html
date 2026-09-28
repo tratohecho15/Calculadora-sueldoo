@@ -196,8 +196,6 @@ La aplicación no tiene modalidad gratuita.
 Solo las cuentas autorizadas pueden utilizarla.
 </p>
 
-<!-- MERCADO PAGO -->
-
 <div class="mp-box">
 
 <h2 style="margin:0 0 8px">
@@ -231,9 +229,6 @@ Pago seguro mediante Mercado Pago
 
 </div>
 
-<!-- FIN MERCADO PAGO -->
-
-
 <div class="grid">
 
 <div>
@@ -261,7 +256,6 @@ Crear cuenta
 </button>
 
 </div>
-
 
 <div>
 
@@ -298,7 +292,6 @@ Recuperar contraseña
 
 </section>
 
-
 <section id="app" class="hidden">
 
 <div class="card">
@@ -333,7 +326,6 @@ Cerrar sesión
 
 </div>
 
-
 <div id="calculator" class="card">
 
 <h2>
@@ -343,7 +335,6 @@ Calculadora salarial
 <div id="calc"></div>
 
 </div>
-
 
 <div id="history" class="card">
 
@@ -360,7 +351,6 @@ Cargando...
 </section>
 
 </main>
-
 
 <script>
 
@@ -381,7 +371,6 @@ const CREAR_SUSCRIPCION_URL =
 
 let user=null;
 let plan=null;
-
 
 function message(t,ok=false){
 
@@ -405,16 +394,14 @@ document.getElementById('mpSubscribeBtn');
 const mensaje =
 document.getElementById('mpMsg');
 
+if(!boton || !mensaje){
+
+return;
+
+}
 
 mensaje.textContent="";
 mensaje.className="";
-
-
-/*
-Obtenemos la sesión actual.
-La suscripción debe estar asociada
-a una cuenta de la aplicación.
-*/
 
 const sessionResult =
 await db.auth.getSession();
@@ -422,11 +409,10 @@ await db.auth.getSession();
 const session =
 sessionResult.data.session;
 
-
 if(!session){
 
 mensaje.textContent =
-"Primero creá una cuenta o iniciá sesión para suscribirte.";
+"Primero iniciá sesión para suscribirte.";
 
 mensaje.className="err";
 
@@ -434,10 +420,8 @@ return;
 
 }
 
-
 const usuario =
 session.user;
-
 
 if(!usuario.email){
 
@@ -450,12 +434,10 @@ return;
 
 }
 
-
 boton.disabled=true;
 
 boton.textContent=
 "Preparando Mercado Pago...";
-
 
 try{
 
@@ -483,16 +465,13 @@ email:usuario.email
 }
 );
 
-
 const data =
 await respuesta.json();
-
 
 console.log(
 "Respuesta crear-suscripcion:",
 data
 );
-
 
 if(!respuesta.ok){
 
@@ -517,7 +496,6 @@ return;
 
 }
 
-
 if(!data.init_point){
 
 mensaje.textContent =
@@ -534,22 +512,13 @@ return;
 
 }
 
-
-/*
-Todo salió correctamente.
-Enviamos al usuario al checkout
-de Mercado Pago.
-*/
-
 mensaje.textContent =
 "Redirigiendo a Mercado Pago...";
 
 mensaje.className="ok";
 
-
 window.location.href =
 data.init_point;
-
 
 }catch(error){
 
@@ -588,7 +557,6 @@ regPass.value;
 const n=
 regName.value.trim();
 
-
 if(!e || p.length<8){
 
 return message(
@@ -596,7 +564,6 @@ return message(
 );
 
 }
-
 
 const r=
 await db.auth.signUp({
@@ -614,7 +581,6 @@ emailRedirectTo:location.href
 
 });
 
-
 if(r.error){
 
 return message(
@@ -623,9 +589,8 @@ r.error.message
 
 }
 
-
 message(
-'Cuenta creada. Confirmá tu email. Luego podrás iniciar sesión y contratar el acceso PRO.',
+'Cuenta creada. Confirmá tu email. Luego iniciá sesión para contratar el acceso PRO.',
 true
 );
 
@@ -649,7 +614,6 @@ loginPass.value
 
 });
 
-
 if(r.error){
 
 return message(
@@ -657,7 +621,6 @@ r.error.message
 );
 
 }
-
 
 location.reload();
 
@@ -673,7 +636,6 @@ async function resetPassword(){
 const e=
 loginEmail.value.trim();
 
-
 if(!e){
 
 return message(
@@ -681,7 +643,6 @@ return message(
 );
 
 }
-
 
 const r=
 await db.auth.resetPasswordForEmail(
@@ -691,7 +652,6 @@ redirectTo:location.href
 }
 );
 
-
 if(r.error){
 
 return message(
@@ -699,7 +659,6 @@ r.error.message
 );
 
 }
-
 
 message(
 'Revisá tu email para recuperar la contraseña.',
@@ -737,7 +696,6 @@ document.getElementById(id)?.value
 
 }
 
-
 function money(x){
 
 return new Intl.NumberFormat(
@@ -767,7 +725,6 @@ calc.innerHTML=`
 <input id="periodo" value="Septiembre 2026">
 </div>
 
-
 <div>
 <label>Categoría</label>
 
@@ -792,7 +749,6 @@ Administrativo
 </select>
 
 </div>
-
 
 <div>
 
@@ -822,7 +778,6 @@ Aeroportuario + Portuario
 
 </div>
 
-
 <div>
 
 <label>
@@ -836,7 +791,6 @@ value="0"
 >
 
 </div>
-
 
 <div>
 
@@ -852,7 +806,6 @@ value="0"
 
 </div>
 
-
 <div>
 
 <label>
@@ -866,7 +819,6 @@ value="1037600"
 >
 
 </div>
-
 
 <div>
 
@@ -882,7 +834,6 @@ value="11"
 
 </div>
 
-
 <div>
 
 <label>
@@ -896,7 +847,6 @@ value="204"
 >
 
 </div>
-
 
 <div>
 
@@ -912,7 +862,6 @@ value="153"
 
 </div>
 
-
 <div>
 
 <label>
@@ -926,7 +875,6 @@ value="0"
 >
 
 </div>
-
 
 <div>
 
@@ -942,7 +890,6 @@ value="4"
 
 </div>
 
-
 <div>
 
 <label>
@@ -956,7 +903,6 @@ value="0"
 >
 
 </div>
-
 
 <div>
 
@@ -972,7 +918,6 @@ value="180000"
 
 </div>
 
-
 <div>
 
 <label>
@@ -986,7 +931,6 @@ value="524000"
 >
 
 </div>
-
 
 <div>
 
@@ -1002,7 +946,6 @@ value="50000"
 
 </div>
 
-
 <div>
 
 <label>
@@ -1016,7 +959,6 @@ value="0"
 >
 
 </div>
-
 
 <div>
 
@@ -1032,7 +974,6 @@ value="0"
 
 </div>
 
-
 <div>
 
 <label>
@@ -1046,7 +987,6 @@ value="0"
 >
 
 </div>
-
 
 <div>
 
@@ -1062,7 +1002,6 @@ value="20"
 
 </div>
 
-
 <div>
 
 <label>
@@ -1077,7 +1016,6 @@ value="11"
 
 </div>
 
-
 <div>
 
 <label>
@@ -1091,7 +1029,6 @@ value="3"
 >
 
 </div>
-
 
 <div>
 
@@ -1109,7 +1046,6 @@ value="20000"
 
 </div>
 
-
 <div style="
 display:flex;
 gap:8px;
@@ -1125,7 +1061,6 @@ onclick="calculate()"
 CALCULAR Y GUARDAR
 </button>
 
-
 <button
 class="secondary"
 style="width:auto"
@@ -1135,7 +1070,6 @@ IMPRIMIR / PDF
 </button>
 
 </div>
-
 
 <div id="result" class="card"></div>
 
@@ -1187,7 +1121,6 @@ const sol=n('solidario');
 const t=
 document.getElementById('tipo').value;
 
-
 if(!b){
 
 return alert(
@@ -1196,51 +1129,40 @@ return alert(
 
 }
 
-
 const h=b/200;
-
 
 const a=
 b*.01*ant;
 
-
 const nn=
 h*.01*noct;
-
 
 const x50=
 h*1.5*e50;
 
-
 const x100=
 h*2*e100;
 
-
 const f=
 h*2*fer;
-
 
 const ae=
 (t==='aero'||t==='ambos')
 ?n('aero')
 :0;
 
-
 const pu=
 (t==='puerto'||t==='ambos')
 ?n('puerto')
 :0;
 
-
 const v=
 dv*vv;
-
 
 const sd=
 h*su+
 pre/30*su+
 via/30*su;
-
 
 const rem=
 Math.max(
@@ -1248,26 +1170,20 @@ Math.max(
 b+a+nn+x50+x100+f+pre+ae+pu+v-sd
 );
 
-
 const j=
 rem*jp/100;
-
 
 const o=
 rem*op/100;
 
-
 const ma=
 rem*man/100;
-
 
 const d=
 j+o+sol+ma;
 
-
 const net=
 rem+via+nr-d;
-
 
 result.innerHTML=`
 
@@ -1275,23 +1191,19 @@ result.innerHTML=`
 Resultado
 </h3>
 
-
 <div class="result">
 ${money(net)}
 </div>
-
 
 <p>
 Remunerativo:
 <b>${money(rem)}</b>
 </p>
 
-
 <p>
 Descuentos:
 <b>${money(d)}</b>
 </p>
-
 
 <table class="table">
 
@@ -1300,54 +1212,45 @@ Descuentos:
 <td>${money(h)}</td>
 </tr>
 
-
 <tr>
 <td>Antigüedad</td>
 <td>${money(a)}</td>
 </tr>
-
 
 <tr>
 <td>Nocturnidad</td>
 <td>${money(nn)}</td>
 </tr>
 
-
 <tr>
 <td>Extras 50%</td>
 <td>${money(x50)}</td>
 </tr>
-
 
 <tr>
 <td>Extras 100%</td>
 <td>${money(x100)}</td>
 </tr>
 
-
 <tr>
 <td>Feriados</td>
 <td>${money(f)}</td>
 </tr>
-
 
 <tr>
 <td>Vacaciones / plus</td>
 <td>${money(v)}</td>
 </tr>
 
-
 <tr>
 <td>Suspensión</td>
 <td>${money(sd)}</td>
 </tr>
 
-
 <tr>
 <td>Viáticos</td>
 <td>${money(via)}</td>
 </tr>
-
 
 <tr>
 <td>No remunerativo</td>
@@ -1356,13 +1259,11 @@ Descuentos:
 
 </table>
 
-
 <p class="small">
 Cálculo orientativo según los parámetros ingresados.
 </p>
 
 `;
-
 
 const r=
 await db
@@ -1399,7 +1300,6 @@ net
 
 });
 
-
 if(!r.error){
 
 result.insertAdjacentHTML(
@@ -1432,7 +1332,6 @@ ascending:false
 )
 .limit(50);
 
-
 historyList.innerHTML=
 r.error
 ?
@@ -1440,6 +1339,7 @@ r.error
 :
 r.data.length
 ?
+
 `
 
 <table class="table">
@@ -1493,11 +1393,9 @@ auth.classList.add('hidden');
 
 app.classList.remove('hidden');
 
-
 welcome.textContent=
 'Hola, '+
 (u.user_metadata?.full_name||u.email);
-
 
 const r=
 await db
@@ -1506,16 +1404,18 @@ await db
 .eq('id',u.id)
 .single();
 
-
 if(r.error||!r.data){
 
 return location.reload();
 
 }
 
-
 plan=r.data.plan;
 
+
+/* ============================= */
+/* CUENTA FREE */
+/* ============================= */
 
 if(
 plan!=='pro' &&
@@ -1527,14 +1427,53 @@ app.innerHTML=`
 <div class="card">
 
 <h2>
-Cuenta pendiente de activación
+Activá tu Calculadora Sueldo PRO
 </h2>
 
 <p>
-Tu cuenta está registrada, pero el acceso debe ser activado por el administrador.
+Tu cuenta fue creada correctamente.
+Para acceder a la calculadora y guardar tus cálculos,
+activá tu suscripción mensual.
 </p>
 
-<button onclick="logout()">
+<div class="mp-box">
+
+<h2 style="margin:0 0 8px">
+Calculadora Sueldo PRO
+</h2>
+
+<p>
+Acceso completo a la calculadora salarial.
+</p>
+
+<div class="mp-price">
+$3.000
+<span style="font-size:16px;font-weight:normal">
+/mes
+</span>
+</div>
+
+<button
+id="mpSubscribeBtn"
+class="mp-button"
+onclick="crearSuscripcion()"
+>
+SUSCRIBIRME POR $3.000/MES
+</button>
+
+<p class="mp-small">
+Pago seguro mediante Mercado Pago
+</p>
+
+<p id="mpMsg"></p>
+
+</div>
+
+<button
+class="secondary"
+style="margin-top:10px"
+onclick="logout()"
+>
 Cerrar sesión
 </button>
 
@@ -1547,9 +1486,12 @@ return;
 }
 
 
+/* ============================= */
+/* CUENTA PRO / ADMIN */
+/* ============================= */
+
 badge.textContent=
 plan.toUpperCase();
-
 
 calculator();
 
@@ -1566,7 +1508,6 @@ loadHistory();
 
 const r=
 await db.auth.getSession();
-
 
 if(r.data.session){
 
